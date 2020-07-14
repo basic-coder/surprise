@@ -1,0 +1,98 @@
+<html>
+    <head>
+        <style>
+            body{
+    background-color: rgb(241, 60, 226);
+    margin:0;
+    text-align: center;
+}
+
+#buffer{
+    display: none;
+}
+
+canvas{
+    width: 100%;
+}
+
+        </style>
+        <script>
+
+let canvas, buffer, ctx, ctx2,w,h
+const textPoints=[]
+const chillPoints=[]
+
+const pointSize=14
+const {random}=Math
+
+function init(){
+    canvas=document.querySelector('#cnvs')
+    canvas.width=w=1000
+    canvas.height=h=1000
+    ctx=canvas.getContext("2d")
+    buffer=document.querySelector("#buffer")
+    buffer.width=w
+    buffer.height=h
+    ctx2=buffer.getContext("2d")
+    ctx2.fillRect(0,0,w,h)
+    ctx2.fillStyle="white"
+    ctx2.font="bolder small-caps 120px serif"
+    ctx2.textAlign="center"
+    ctx2.textBaseline="middle"
+    ctx2.fillText("I Love", w/2, h/2-100)
+    ctx2.fillText("You", w/2, h/2)
+    ctx2.fillText("❤", w/2, h/2+110)
+    const data=ctx2.getImageData(0,0,w,h)
+    for(let i=0;i<data.data.length; i+=4*pointSize){
+        if(data.data[i+2]&&data.data[i+2]==data.data[i]){
+            const x=parseInt(i/4%w)
+            const y=parseInt(i/4/w)
+
+            textPoints.push([x,y,random()*w,random()*h])
+        }else if(data.data[i]){
+            const x=parseInt(i/4%w)
+            const y=parseInt(i/4/w)
+
+            chillPoints.push([x,y,random()*w,random()*h])
+        }
+    }
+    canvas.addEventListener("touchmove",(e)=>{
+        const {pageX, pageY}=e.touches[0]
+        const lambda=(p)=>{
+            p[2]+=(pageX-p[2])**3/100000
+            p[3]+=(pageY-p[3])**3/100000
+        }
+        textPoints.forEach(lambda)
+        chillPoints.forEach(lambda)
+    })
+    ctx.font='bold ${pointSize}px arial'
+    ctx.textAlign="center"
+    ctx.textBaseline="middle"
+}
+
+function animation(time){
+    ctx.clearRect(0,0,w,h)
+    const lambda=(p,emoji)=>{
+        const [x, y, x2, y2]=p
+        ctx.fillText(emoji,x2,y2)
+        p[2]+=(x-x2)/50
+        p[3]+=(y-y2)/50
+    }
+    textPoints.forEach(p=>lambda(p,"🌹"))
+    chillPoints.forEach(p=>lambda(p,"😍"))
+    requestAnimationFrame(animation)
+}
+
+onload=()=>{
+    init()
+    requestAnimationFrame(animation)
+}
+
+        </script>
+        <title>HTML PROJECTS</title>
+    </head>
+    <body>
+        <canvas id="cnvs"></canvas>
+        <canvas id="buffer"></canvas>
+    </body>
+</html>
